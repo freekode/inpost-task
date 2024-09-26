@@ -7,6 +7,7 @@ import org.freekode.inposttask.domain.product.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,6 +32,6 @@ public class PriceService {
         if (discountStrategy != null) {
             totalPrice = discountStrategy.applyDiscount(totalPrice, productAmount);
         }
-        return Optional.of(totalPrice);
+        return Optional.of(totalPrice.setScale(2, RoundingMode.HALF_DOWN));
     }
 }

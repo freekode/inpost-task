@@ -1,13 +1,22 @@
-app.discounts:
-  amount-based:
-    8d49e28f-8ad4-4069-bfc3-f26d93e7cdc9:
-      - amount-threshold: 10
-        discount: 15
-      - amount-threshold: 20
-        discount: 20
-  percentage-based:
-    33e09cd8-e255-44d1-9b7c-8fe8c98d6f9e:
-      - amount-threshold: 20
-        discount: 7
+app:
+  products:
+    - id: 8d49e28f-8ad4-4069-bfc3-f26d93e7cdc9
+      price: 10
+    - id: 33e09cd8-e255-44d1-9b7c-8fe8c98d6f9e
+      price: 12
+    - id: 33e09cd8-e255-44d1-9b7c-8fe8c98d6f00
+      price: 15
+
+  discounts:
+    amount-based:
+      8d49e28f-8ad4-4069-bfc3-f26d93e7cdc9:
+        - amount-threshold: 10
+          discount: 15
+        - amount-threshold: 20
+          discount: 20
+    percentage-based:
+      33e09cd8-e255-44d1-9b7c-8fe8c98d6f9e:
+        - amount-threshold: 20
+          discount: 7
 
 spring.application.name: inpost-task

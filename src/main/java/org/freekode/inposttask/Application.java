@@ -1,11 +1,12 @@
 package org.freekode.inposttask;
 
 import org.freekode.inposttask.infrastructure.DiscountsConfiguration;
+import org.freekode.inposttask.infrastructure.ProductsConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
-@EnableConfigurationProperties(DiscountsConfiguration.class)
+@EnableConfigurationProperties({DiscountsConfiguration.class, ProductsConfiguration.class})
 @SpringBootApplication
 public class Application {
 

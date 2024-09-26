@@ -17,8 +17,7 @@ public class PercentageBasedDiscountStrategy implements DiscountStrategy {
             if (productDiscount.amountThreshold() > productAmount) {
                 continue;
             }
-
-            BigDecimal price = totalPrice.subtract(totalPrice.multiply(BigDecimal.valueOf(productDiscount.discount())));
+            BigDecimal price = totalPrice.subtract(totalPrice.multiply(BigDecimal.valueOf(productDiscount.discount() / 100.0)));
             discountedPrice = discountedPrice.min(price);
         }
 

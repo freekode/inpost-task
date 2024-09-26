@@ -8,11 +8,13 @@ import org.freekode.inposttask.domain.product.Product;
 import org.freekode.inposttask.infrastructure.DiscountsConfiguration;
 import org.freekode.inposttask.infrastructure.InMemoryDiscountRepository;
 import org.freekode.inposttask.infrastructure.InMemoryProductRepository;
+import org.freekode.inposttask.infrastructure.ProductsConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PriceServiceTest {
-    private final InMemoryProductRepository productRepository = new InMemoryProductRepository();
+    private final InMemoryProductRepository productRepository = new InMemoryProductRepository(new ProductsConfiguration(List.of()));
 
     private final InMemoryDiscountRepository discountRepository = new InMemoryDiscountRepository(new DiscountsConfiguration(Map.of(), Map.of()));
 
@@ -53,17 +55,18 @@ class PriceServiceTest {
 
         // then
         assertTrue(price.isPresent());
-        assertEquals(product.price().multiply(BigDecimal.valueOf(productAmount)), price.get());
+        assertEquals(product.price().multiply(BigDecimal.valueOf(productAmount)).setScale(2, RoundingMode.HALF_DOWN), price.get());
     }
 
     @Test
     void getPriceWithAmountBasedDiscountTest() {
         // given
         int productAmount = 13;
+        int discountAmount = 7;
 
         DiscountStrategy discountStrategy = new AmountBasedDiscountStrategy(List.of(
                 new ProductDiscount(10, 5),
-                new ProductDiscount(11, 7)));
+                new ProductDiscount(11, discountAmount)));
         discountRepository.addDiscount(product.id(), discountStrategy);
 
         // when
@@ -71,15 +74,17 @@ class PriceServiceTest {
 
         // then
         assertTrue(price.isPresent());
-        assertEquals(product.price().multiply(BigDecimal.valueOf(productAmount)).subtract(BigDecimal.valueOf(7)), price.get());
+        BigDecimal expectedPrice = product.price().multiply(BigDecimal.valueOf(productAmount)).subtract(BigDecimal.valueOf(discountAmount));
+        assertEquals(expectedPrice.setScale(2, RoundingMode.HALF_DOWN), price.get());
     }
 
     @Test
     void getPriceWithPercentageBasedDiscountTest() {
         // given
         int productAmount = 17;
+        int discountPercentage = 5;
 
-        DiscountStrategy discountStrategy = new PercentageBasedDiscountStrategy(List.of(new ProductDiscount(10, 5)));
+        DiscountStrategy discountStrategy = new PercentageBasedDiscountStrategy(List.of(new ProductDiscount(10, discountPercentage)));
         discountRepository.addDiscount(product.id(), discountStrategy);
 
         // when
@@ -88,7 +93,7 @@ class PriceServiceTest {
         // then
         assertTrue(price.isPresent());
         BigDecimal totalPrice = product.price().multiply(BigDecimal.valueOf(productAmount));
-        assertEquals(totalPrice.subtract(totalPrice.multiply(BigDecimal.valueOf(5))), price.get());
+        assertEquals(totalPrice.subtract(totalPrice.multiply(BigDecimal.valueOf(discountPercentage / 100.0))), price.get());
     }
 
     @Test

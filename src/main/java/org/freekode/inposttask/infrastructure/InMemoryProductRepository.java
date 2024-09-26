@@ -13,6 +13,10 @@ import java.util.UUID;
 public class InMemoryProductRepository implements ProductRepository {
     private static final Map<UUID, Product> idToProductMap = new HashMap<>();
 
+    public InMemoryProductRepository(ProductsConfiguration productsConfiguration) {
+        productsConfiguration.products().forEach(product -> idToProductMap.put(product.id(), product));
+    }
+
     @Override
     public Optional<Product> findById(UUID id) {
         return Optional.ofNullable(idToProductMap.get(id));
