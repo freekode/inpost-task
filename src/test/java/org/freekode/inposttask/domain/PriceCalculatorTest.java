@@ -1,4 +1,4 @@
-package org.freekode.inposttask.app;
+package org.freekode.inposttask.domain;
 
 import org.freekode.inposttask.domain.discount.AmountBasedDiscountStrategy;
 import org.freekode.inposttask.domain.discount.DiscountStrategy;
@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,12 +23,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class PriceServiceTest {
+class PriceCalculatorTest {
     private final InMemoryProductRepository productRepository = new InMemoryProductRepository(new ProductsConfiguration(List.of()));
 
     private final InMemoryDiscountRepository discountRepository = new InMemoryDiscountRepository(new DiscountsConfiguration(Map.of(), Map.of()));
 
-    private final PriceService priceService = new PriceService(productRepository, discountRepository);
+    private final PriceCalculator priceCalculator = new PriceCalculator(productRepository, discountRepository);
 
     private Product product;
 
@@ -37,6 +36,7 @@ class PriceServiceTest {
     void beforeEach() {
         product = new Product(UUID.randomUUID(), BigDecimal.valueOf(123));
         productRepository.addProduct(product);
+        productRepository.addProduct(new Product(UUID.randomUUID(), BigDecimal.valueOf(321)));
     }
 
     @AfterEach
@@ -51,11 +51,11 @@ class PriceServiceTest {
         int productAmount = 2;
 
         // when
-        Optional<BigDecimal> price = priceService.getPrice(product.id(), productAmount);
+        Optional<TotalPrice> actualPrice = priceCalculator.getPrice(product.id(), productAmount);
 
         // then
-        assertTrue(price.isPresent());
-        assertEquals(product.price().multiply(BigDecimal.valueOf(productAmount)).setScale(2, RoundingMode.HALF_DOWN), price.get());
+        assertTrue(actualPrice.isPresent());
+        assertEquals(product.getTotalPrice(productAmount), actualPrice.get());
     }
 
     @Test
@@ -70,12 +70,12 @@ class PriceServiceTest {
         discountRepository.addDiscount(product.id(), discountStrategy);
 
         // when
-        Optional<BigDecimal> price = priceService.getPrice(product.id(), productAmount);
+        Optional<TotalPrice> actualPrice = priceCalculator.getPrice(product.id(), productAmount);
 
         // then
-        assertTrue(price.isPresent());
-        BigDecimal expectedPrice = product.price().multiply(BigDecimal.valueOf(productAmount)).subtract(BigDecimal.valueOf(discountAmount));
-        assertEquals(expectedPrice.setScale(2, RoundingMode.HALF_DOWN), price.get());
+        assertTrue(actualPrice.isPresent());
+        TotalPrice expectedPrice = new TotalPrice(product.getTotalPrice(productAmount).price().subtract(BigDecimal.valueOf(discountAmount)));
+        assertEquals(expectedPrice, actualPrice.get());
     }
 
     @Test
@@ -88,18 +88,23 @@ class PriceServiceTest {
         discountRepository.addDiscount(product.id(), discountStrategy);
 
         // when
-        Optional<BigDecimal> price = priceService.getPrice(product.id(), productAmount);
+        Optional<TotalPrice> actualPrice = priceCalculator.getPrice(product.id(), productAmount);
 
         // then
-        assertTrue(price.isPresent());
-        BigDecimal totalPrice = product.price().multiply(BigDecimal.valueOf(productAmount));
-        assertEquals(totalPrice.subtract(totalPrice.multiply(BigDecimal.valueOf(discountPercentage / 100.0))), price.get());
+        assertTrue(actualPrice.isPresent());
+
+        BigDecimal totalPrice = product.getTotalPrice(productAmount).price();
+        TotalPrice expectedTotalPrice = new TotalPrice(product.price().multiply(
+                BigDecimal.valueOf(productAmount)).subtract(
+                totalPrice.multiply(BigDecimal.valueOf(discountPercentage / 100.0))));
+
+        assertEquals(expectedTotalPrice, actualPrice.get());
     }
 
     @Test
     void getPriceForUnknownProductTest() {
         // when
-        Optional<BigDecimal> price = priceService.getPrice(UUID.randomUUID(), 1);
+        Optional<TotalPrice> price = priceCalculator.getPrice(UUID.randomUUID(), 1);
 
         // then
         assertFalse(price.isPresent());

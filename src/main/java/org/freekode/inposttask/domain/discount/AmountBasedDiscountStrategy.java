@@ -1,5 +1,7 @@
 package org.freekode.inposttask.domain.discount;
 
+import org.freekode.inposttask.domain.TotalPrice;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -11,16 +13,16 @@ public class AmountBasedDiscountStrategy implements DiscountStrategy {
     }
 
     @Override
-    public BigDecimal applyDiscount(BigDecimal totalPrice, Integer productAmount) {
-        BigDecimal discountedPrice = totalPrice;
+    public TotalPrice applyDiscount(TotalPrice totalPrice, Integer productAmount) {
+        BigDecimal discountedPrice = totalPrice.price();
         for (ProductDiscount productDiscount : productDiscounts) {
             if (productDiscount.amountThreshold() > productAmount) {
                 continue;
             }
-            BigDecimal price = totalPrice.subtract(new BigDecimal(productDiscount.discount()));
+            BigDecimal price = totalPrice.price().subtract(new BigDecimal(productDiscount.discount()));
             discountedPrice = discountedPrice.min(price);
         }
 
-        return discountedPrice;
+        return new TotalPrice(discountedPrice);
     }
 }

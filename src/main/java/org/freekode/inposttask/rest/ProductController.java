@@ -1,6 +1,6 @@
 package org.freekode.inposttask.rest;
 
-import org.freekode.inposttask.app.PriceService;
+import org.freekode.inposttask.domain.PriceCalculator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,16 +13,16 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/price")
 public class ProductController {
-    private final PriceService priceService;
+    private final PriceCalculator priceCalculator;
 
-    public ProductController(PriceService priceService) {
-        this.priceService = priceService;
+    public ProductController(PriceCalculator priceCalculator) {
+        this.priceCalculator = priceCalculator;
     }
 
     @GetMapping("/product/{productId}")
     public ResponseEntity<ProductPriceDTO> getProductPrice(@PathVariable UUID productId, @RequestParam Integer amount) {
-        return priceService.getPrice(productId, amount)
-                .map(price -> ResponseEntity.ok(new ProductPriceDTO(price)))
+        return priceCalculator.getPrice(productId, amount)
+                .map(price -> ResponseEntity.ok(new ProductPriceDTO(price.toString())))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

@@ -1,7 +1,7 @@
 package org.freekode.inposttask.domain.discount;
 
-import java.math.BigDecimal;
+import org.freekode.inposttask.domain.TotalPrice;
 
 public interface DiscountStrategy {
-    BigDecimal applyDiscount(BigDecimal productPrice, Integer productAmount);
+    TotalPrice applyDiscount(TotalPrice productPrice, Integer productAmount);
 }
