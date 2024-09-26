@@ -1,4 +1,4 @@
-package org.freekode.inposttask.domain;
+package org.freekode.inposttask.domain.discount;
 
 import java.math.BigDecimal;
 

@@ -1,7 +1,7 @@
 package org.freekode.inposttask.infrastructure;
 
-import org.freekode.inposttask.domain.Product;
-import org.freekode.inposttask.domain.ProductRepository;
+import org.freekode.inposttask.domain.product.Product;
+import org.freekode.inposttask.domain.product.ProductRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
@@ -20,5 +20,9 @@ public class InMemoryProductRepository implements ProductRepository {
 
     public void addProduct(Product product) {
         idToProductMap.put(product.id(), product);
+    }
+
+    public void clearProducts() {
+        idToProductMap.clear();
     }
 }

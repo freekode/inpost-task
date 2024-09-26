@@ -1,9 +1,9 @@
 package org.freekode.inposttask.app;
 
-import org.freekode.inposttask.domain.DiscountRepository;
-import org.freekode.inposttask.domain.DiscountStrategy;
-import org.freekode.inposttask.domain.Product;
-import org.freekode.inposttask.domain.ProductRepository;
+import org.freekode.inposttask.domain.discount.DiscountRepository;
+import org.freekode.inposttask.domain.discount.DiscountStrategy;
+import org.freekode.inposttask.domain.product.Product;
+import org.freekode.inposttask.domain.product.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -25,11 +25,12 @@ public class PriceService {
         if (product == null) {
             return Optional.empty();
         }
+        BigDecimal totalPrice = product.price().multiply(BigDecimal.valueOf(productAmount));
+
         DiscountStrategy discountStrategy = discountRepository.findDiscountForProduct(productId).orElse(null);
-        if (discountStrategy == null) {
-            return Optional.of(product.price().multiply(BigDecimal.valueOf(productAmount)));
+        if (discountStrategy != null) {
+            totalPrice = discountStrategy.applyDiscount(totalPrice, productAmount);
         }
-        BigDecimal price = discountStrategy.applyDiscount(product.price(), productAmount);
-        return Optional.of(price);
+        return Optional.of(totalPrice);
     }
 }

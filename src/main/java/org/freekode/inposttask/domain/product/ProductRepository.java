@@ -1,4 +1,4 @@
-package org.freekode.inposttask.domain;
+package org.freekode.inposttask.domain.product;
 
 import java.util.Optional;
 import java.util.UUID;
